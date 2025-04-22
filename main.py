@@ -59,6 +59,6 @@ while True:
             print(result)
         else:
             name = input("New fingerprint detected. Enter name: ")
-            cursor.execute("INSERT INTO users (id, name, email, credit_card_provider, credit_card_number, cvv, expiration) VALUES (?, ?, ?, ?, ?, ?, ?)", (fingerprint_id, name))
+            cursor.execute("INSERT INTO users (id, name) VALUES (?, ?)", (fingerprint_id, name))
             conn.commit()
             print(f"User {name} added.")
