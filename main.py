@@ -53,18 +53,17 @@ try:
                 token=keys.SQUARE_ACCESS_TOKEN,
                 environment=SquareEnvironment.SANDBOX)
             idempotency_key = str(uuid.uuid4()) 
-            payment_details = {
-                "source_id": "cnon:card-nonce-ok",
-                "idempotency_key": idempotency_key,
-                "amount_money": {
+            result = client.payments.create(
+                source_id="cnon:card-nonce-ok",
+                idempotency_key=idempotency_key,
+                amount_money={
                     "amount": 100,
                     "currency": "USD"
                 },
-                "autocomplete": True,
-                "note": "INSERT ITEM HERE",
-                "buyer_email_address": result[2],
-            }
-            result = client.payments.create(body = payment_details)
+                autocomplete=True,
+                note="INSERT ITEM HERE",
+                buyer_email_address=result[2]
+            )
             if result.is_success():
                 print(json.dumps(result.body, indent=2))
             elif result.is_error():
