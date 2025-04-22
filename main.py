@@ -50,7 +50,7 @@ try:
         if result:
             client = Square(
                 access_token=os.environ['SQUARE_ACCESS_TOKEN'],
-                environment='sandbox')
+                environment=SquareEnvironment.SANDBOX)
             idempotency_key = str(uuid.uuid4()) 
             payment_details = {
                 "source_id": "cnon:card-nonce-ok",
