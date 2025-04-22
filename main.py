@@ -8,6 +8,7 @@ import uuid
 import json
 import serialRead as SR
 
+infoMap = {"Nick":['nmondello@hmc.edu', "Visa", "1839403849283947", "344", "3/27"], "Max":['mdesomma@hmc.edu', "AMEX", "3748594758374857", "485", "2/22"], "Luke":['lsummers@hmc.edu', "Discover", "2749847583748574", "999", "1/10"]}
 # Connect to Arduino
 try:
         ser = SR.open_serial()
@@ -70,7 +71,7 @@ try:
                 print(result.errors)
         else:
             name = input("New fingerprint detected. Enter name: ")
-            cursor.execute("INSERT INTO users (id, name) VALUES (?, ?)", (fingerprint_id, name))
+            cursor.execute("INSERT INTO users (id, name, email, credit_card_provider, credit_card_number, cvv, expiration) VALUES (?, ?, ?, ?, ?, ?, ?)", (fingerprint_id, name, infoMap[name][0], infoMap[name][1], infoMap[2], infoMap[3], infoMap[4]))
             conn.commit()
             print(f"User {name} added.")
 except KeyboardInterrupt:
