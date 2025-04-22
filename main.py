@@ -5,10 +5,15 @@ import square
 from square.client import Client
 import os
 import uuid
+import json
+import serialRead as SR
 
 # Connect to Arduino
-ser = serial.Serial('COM3', 9600)  # Replace COM3 with your port
-time.sleep(2)  # Wait for Arduino to reset
+try:
+        ser = SR.open_serial()
+except serial.SerialException as e:
+        print(f"❌ Could not open serial port: {e}")
+    
 
 # Connect to SQLite
 conn = sqlite3.connect('fingerprints.db')
@@ -30,9 +35,12 @@ conn.commit()
 
 # Listen to serial
 print("Listening for fingerprint IDs...")
-while True:
-    if ser.in_waiting > 0:
-        fingerprint_id = ser.readline().decode().strip()
+try:
+    while True:
+        line = ser.readline()          # reads up to '\n'
+        if not line:
+            continue                   # timeout without data
+        fingerprint_id = line.decode(errors="replace").rstrip()
         print(f"Received Fingerprint ID: {fingerprint_id}")
 
         # Query or Insert
@@ -56,9 +64,16 @@ while True:
                 "buyer_email_address": result[2],
             }
             result = client.payments.create_payment(body = payment_details)
-            print(result)
+            if result.is_success():
+                print(json.dumps(result.body, indent=2))
+            elif result.is_error():
+                print(result.errors)
         else:
             name = input("New fingerprint detected. Enter name: ")
             cursor.execute("INSERT INTO users (id, name) VALUES (?, ?)", (fingerprint_id, name))
             conn.commit()
             print(f"User {name} added.")
+except KeyboardInterrupt:
+        print("\n👋 Exiting on Ctrl‑C")
+finally:
+        ser.close()

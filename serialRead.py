@@ -22,35 +22,3 @@ def open_serial(wait_for_arduino_reset: bool = True) -> serial.Serial:
         time.sleep(2)      # most Arduinos reset when the port opens
         ser.reset_input_buffer()
     return ser
-
-def main() -> None:
-    print(f"🔌 Opening {port} @ {baud_rate} baud …")
-    try:
-        ser = open_serial()
-    except serial.SerialException as e:
-        print(f"❌ Could not open serial port: {e}")
-        return
-
-    if log_to_csv:
-        print(f"📝 Appending data to {csv_path}")
-
-    try:
-        while True:
-            line = ser.readline()          # reads up to '\n'
-            if not line:
-                continue                   # timeout without data
-            text = line.decode(errors="replace").rstrip()
-            timestamp = datetime.now().isoformat(timespec="seconds")
-            print(f"[{timestamp}] {text}")
-
-            if log_to_csv:
-                with open(csv_path, "a", encoding="utf-8") as f:
-                    f.write(f"{timestamp},{text}\n")
-
-    except KeyboardInterrupt:
-        print("\n👋 Exiting on Ctrl‑C")
-    finally:
-        ser.close()
-
-if __name__ == "__main__":
-    main()
