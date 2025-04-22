@@ -64,7 +64,7 @@ try:
                 "note": "INSERT ITEM HERE",
                 "buyer_email_address": result[2],
             }
-            result = client.payments.create_payment(body = payment_details)
+            result = client.payments.create(body = payment_details)
             if result.is_success():
                 print(json.dumps(result.body, indent=2))
             elif result.is_error():
