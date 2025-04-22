@@ -1,8 +1,8 @@
 import serial
 import sqlite3
 import time
-import square
-from square.client import Client
+from square import Square
+from square.environment import SquareEnvironment
 import os
 import uuid
 import json
@@ -48,7 +48,7 @@ try:
         result = cursor.fetchone()
 
         if result:
-            client = Client(
+            client = Square(
                 access_token=os.environ['SQUARE_ACCESS_TOKEN'],
                 environment='sandbox')
             idempotency_key = str(uuid.uuid4()) 
