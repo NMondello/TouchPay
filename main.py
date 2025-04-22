@@ -3,7 +3,7 @@ import sqlite3
 import time
 from square import Square
 from square.environment import SquareEnvironment
-import os
+import keys
 import uuid
 import json
 import serialRead as SR
@@ -45,12 +45,12 @@ try:
         print(f"Received Fingerprint ID: {fingerprint_id}")
 
         # Query or Insert
-        cursor.execute("SELECT name FROM users WHERE id=?", (fingerprint_id,))
+        cursor.execute("SELECT * FROM users WHERE id=?", (fingerprint_id,))
         result = cursor.fetchone()
 
         if result:
             client = Square(
-                access_token=os.environ['SQUARE_ACCESS_TOKEN'],
+                token=keys.SQUARE_ACCESS_TOKEN,
                 environment=SquareEnvironment.SANDBOX)
             idempotency_key = str(uuid.uuid4()) 
             payment_details = {
