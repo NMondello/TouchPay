@@ -1,6 +1,36 @@
-import Form from "@/components/saleForm/form";
+"use client";
 
-export default async function Home() {
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
-  return <Form />
+export default function Home() {
+
+  const router = useRouter();
+
+  const goToPaymentForm = () => {
+    router.push(`/saleForm`);
+  }
+
+  const goToUserForm = () => {
+    router.push(`/userForm`);
+  }
+
+  return <div className="flex items-center py-4">
+          <div className = "flex items-center py-4">
+            <Button
+                variant='ghost'
+                onClick={goToPaymentForm}
+            >
+              Make a Sale
+            </Button>
+          </div>
+          <div className = "flex items-center py-4">
+            <Button
+                variant='ghost'
+                onClick={goToUserForm}
+            >
+              Add Fingerprint
+            </Button>
+          </div>
+         </div>
 }

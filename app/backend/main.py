@@ -136,7 +136,7 @@ def make_payment(amount):
             return jsonify(result)
 
 @app.route('/add_user', methods=['GET'])
-def add_user(name, email, credit_card_provider, credit_card_number, cvv, expiration):
+def add_user(info):
     
     # Connect to Arduino
     try:
@@ -185,9 +185,9 @@ def add_user(name, email, credit_card_provider, credit_card_number, cvv, expirat
                 print(result['message'])
                 break
             else:
-                cursor.execute("INSERT INTO users (id, name, email, credit_card_provider, credit_card_number, cvv, expiration) VALUES (?, ?, ?, ?, ?, ?, ?)", (fingerprint_id, name, email, credit_card_provider, credit_card_number, cvv, expiration))
+                cursor.execute("INSERT INTO users (id, name, email, credit_card_provider, credit_card_number, cvv, expiration) VALUES (?, ?, ?, ?, ?, ?, ?)", (fingerprint_id, info['name'], info['email'], info['provider'], info['number'], info['cvv'], info['expiry']))
                 conn.commit()
-                result['message'] = f"User {name} added."
+                result['message'] = f"User {info[0]} added."
                 result['status'] = True
                 print(result['message'])
                 break
