@@ -1,5 +1,6 @@
 .gitignore
 keys.py
+fingerprints.db
 
 # dependencies
 */node_modules
