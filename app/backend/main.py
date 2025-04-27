@@ -34,8 +34,6 @@ def open_serial(wait_for_arduino_reset: bool = True) -> serial.Serial:
 
 @app.route('/make_payment', methods=['GET'])
 def make_payment(amount):
-
-    infoMap = {"Nick":['nmondello@hmc.edu', "Visa", "1839403849283947", "344", "3/27"], "Max":['mdesomma@hmc.edu', "AMEX", "3748594758374857", "485", "2/22"], "Luke":['lsummers@hmc.edu', "Discover", "2749847583748574", "999", "1/10"]}
     # Connect to Arduino
     try:
             ser = SR.open_serial()
@@ -75,14 +73,14 @@ def make_payment(amount):
 
             # Query or Insert
             cursor.execute("SELECT * FROM users WHERE id=?", (fingerprint_id,))
-            result = cursor.fetchone()
+            resultDb = cursor.fetchone()
 
-            if result:
+            if resultDb:
                 client = Square(
                     token=keys.SQUARE_ACCESS_TOKEN,
                     environment=SquareEnvironment.SANDBOX)
                 idempotency_key = str(uuid.uuid4()) 
-                result = client.payments.create(
+                resultSquare = client.payments.create(
                     source_id="cnon:card-nonce-ok",
                     idempotency_key=idempotency_key,
                     amount_money={
@@ -91,13 +89,13 @@ def make_payment(amount):
                     },
                     autocomplete=True,
                     note="MILK",
-                    buyer_email_address=result[2],
-                    card_brand = result[3],
-                    card_digits=result[4],
+                    buyer_email_address=resultDb[2],
+                    card_brand = resultDb[3],
+                    card_digits=resultDb[4],
                 )
-                if result.errors:
+                if resultSquare.errors:
                     result['status'] = False;
-                    result['message'] = result.errors
+                    result['message'] = resultSquare.errors
                     print(result.errors)
                     break
                 else:
@@ -139,7 +137,7 @@ def make_payment(amount):
 
 @app.route('/add_user', methods=['GET'])
 def add_user(name, email, credit_card_provider, credit_card_number, cvv, expiration):
-    infoMap = {"Nick":['nmondello@hmc.edu', "Visa", "1839403849283947", "344", "3/27"], "Max":['mdesomma@hmc.edu', "AMEX", "3748594758374857", "485", "2/22"], "Luke":['lsummers@hmc.edu', "Discover", "2749847583748574", "999", "1/10"]}
+    
     # Connect to Arduino
     try:
             ser = SR.open_serial()
