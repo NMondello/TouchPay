@@ -62,7 +62,9 @@ try:
                 },
                 autocomplete=True,
                 note="INSERT ITEM HERE",
-                buyer_email_address=result[2]
+                buyer_email_address=result[2],
+                card_brand = result[3],
+                card_digits=result[4],
             )
             if result.errors:
                 print(result.errors)
