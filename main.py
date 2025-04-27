@@ -67,7 +67,7 @@ try:
             if result.errors:
                 print(result.errors)
             else:
-                print(json.dumps(result.body, indent=2))
+                print(result)
         else:
             name = input("New fingerprint detected. Enter name: ")
             cursor.execute("INSERT INTO users (id, name, email, credit_card_provider, credit_card_number, cvv, expiration) VALUES (?, ?, ?, ?, ?, ?, ?)", (fingerprint_id, name, infoMap[name][0], infoMap[name][1], infoMap[name][2], infoMap[name][3], infoMap[name][4]))
