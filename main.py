@@ -67,27 +67,28 @@ try:
             if result.errors:
                 print(result.errors)
             else:
-                response_json = json.dumps(result.to_dict(), indent=2)
-                print(response_json)
+                #response_json = json.dumps(result.to_dict(), indent=2)
+                #print(response_json)
 
-                buyer_email = result.buyer_email_address  # May be None if not collected
+                buyer_email = result.payment.buyer_email_address  # May be None if not collected
                 
 
                 # Get the amount
-                amount_paid_cents = result.amount_money.amount  # In cents
-                currency = result.amount_money.currency
+                amount_paid_cents = result.payment.amount_money.amount  # In cents
+                currency = result.payment.amount_money.currency
 
                 # Get card brand (from card_details)
                 card_brand = None
-                if result.card_details and result.card_details.card:
-                    card_brand = result.card_details.card.card_brand
+                if result.payment.card_details and result.payment.card_details.card:
+                    card_brand = result.payment.card_details.card.card_brand
+                    card_digits = result.payment.card_details.card.last4
 
                 # Format amount to dollars
                 amount_paid_dollars = amount_paid_cents / 100
 
                 # Build and print the thank you message
                 if buyer_email and card_brand:
-                    print(f"Thanks {buyer_email} for the purchase of ${amount_paid_dollars:.2f} on your {card_brand} card!")
+                    print(f"Thanks {buyer_email} for the purchase of ${amount_paid_dollars:.2f} on your {card_brand} card ending in {card_digits}!")
                 else:
                     print(f"Thanks for your purchase of ${amount_paid_dollars:.2f}!")
         else:
