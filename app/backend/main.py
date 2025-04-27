@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-"""
-read_arduino.py – Stream text lines from an Arduino’s Serial.print()
-                  to the console (Ctrl‑C to quit).
-"""
-
 from datetime import datetime
 import serial
 import sqlite3
