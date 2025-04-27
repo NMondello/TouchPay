@@ -99,13 +99,13 @@ def make_payment(amount):
                     print(result.errors)
                     break
                 else:
-                    buyer_email = result.payment.buyer_email_address  # May be None if not collected
+                    buyer_email = resultSquare.payment.buyer_email_address  # May be None if not collected
 
                     # Get card brand (from card_details)
                     card_brand = None
-                    if result.payment.card_details and result.payment.card_details.card:
-                        card_brand = result.payment.card_details.card.card_brand
-                        card_digits = result.payment.card_details.card.last4
+                    if resultSquare.payment.card_details and resultSquare.payment.card_details.card:
+                        card_brand = resultSquare.payment.card_details.card.card_brand
+                        card_digits = resultSquare.payment.card_details.card.last4
                     
                     result['status'] = True
 
@@ -177,9 +177,9 @@ def add_user(name, email, credit_card_provider, credit_card_number, cvv, expirat
 
             # Query or Insert
             cursor.execute("SELECT * FROM users WHERE id=?", (fingerprint_id,))
-            result = cursor.fetchone()
+            resultDb = cursor.fetchone()
 
-            if result:
+            if resultDb:
                 result['status'] = False
                 result['message'] = "Fingerprint already exists in database."
                 print(result['message'])
