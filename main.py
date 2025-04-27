@@ -57,11 +57,11 @@ try:
                 source_id="cnon:card-nonce-ok",
                 idempotency_key=idempotency_key,
                 amount_money={
-                    "amount": 100,
+                    "amount": 1000,
                     "currency": "USD"
                 },
                 autocomplete=True,
-                note="INSERT ITEM HERE",
+                note="MILK",
                 buyer_email_address=result[2],
                 card_brand = result[3],
                 card_digits=result[4],
@@ -90,9 +90,9 @@ try:
 
                 # Build and print the thank you message
                 if buyer_email and card_brand:
-                    print(f"Thanks {buyer_email} for the purchase of ${amount_paid_dollars:.2f} on your {card_brand} card ending in {card_digits}!")
+                    print(f"Thanks {buyer_email} for the purchase of {result.note} for ${amount_paid_dollars:.2f} on your {card_brand} card ending in {card_digits}!")
                 else:
-                    print(f"Thanks for your purchase of ${amount_paid_dollars:.2f}!")
+                    print(f"Thanks for your purchase of {result.note} for ${amount_paid_dollars:.2f}!")
         else:
             name = input("New fingerprint detected. Enter name: ")
             cursor.execute("INSERT INTO users (id, name, email, credit_card_provider, credit_card_number, cvv, expiration) VALUES (?, ?, ?, ?, ?, ?, ?)", (fingerprint_id, name, infoMap[name][0], infoMap[name][1], infoMap[name][2], infoMap[name][3], infoMap[name][4]))
