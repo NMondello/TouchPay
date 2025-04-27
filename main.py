@@ -57,17 +57,42 @@ try:
                 source_id="cnon:card-nonce-ok",
                 idempotency_key=idempotency_key,
                 amount_money={
-                    "amount": 100,
+                    "amount": 1000,
                     "currency": "USD"
                 },
                 autocomplete=True,
-                note="INSERT ITEM HERE",
-                buyer_email_address=result[2]
+                note="MILK",
+                buyer_email_address=result[2],
+                card_brand = result[3],
+                card_digits=result[4],
             )
             if result.errors:
                 print(result.errors)
             else:
-                print(json.dumps(result.body, indent=2))
+                #response_json = json.dumps(result.to_dict(), indent=2)
+                #print(response_json)
+
+                buyer_email = result.payment.buyer_email_address  # May be None if not collected
+                
+
+                # Get the amount
+                amount_paid_cents = result.payment.amount_money.amount  # In cents
+                currency = result.payment.amount_money.currency
+
+                # Get card brand (from card_details)
+                card_brand = None
+                if result.payment.card_details and result.payment.card_details.card:
+                    card_brand = result.payment.card_details.card.card_brand
+                    card_digits = result.payment.card_details.card.last4
+
+                # Format amount to dollars
+                amount_paid_dollars = amount_paid_cents / 100
+
+                # Build and print the thank you message
+                if buyer_email and card_brand:
+                    print(f"Thanks {buyer_email} for the purchase of {result.note} for ${amount_paid_dollars:.2f} on your {card_brand} card ending in {card_digits}!")
+                else:
+                    print(f"Thanks for your purchase of {result.note} for ${amount_paid_dollars:.2f}!")
         else:
             name = input("New fingerprint detected. Enter name: ")
             cursor.execute("INSERT INTO users (id, name, email, credit_card_provider, credit_card_number, cvv, expiration) VALUES (?, ?, ?, ?, ?, ?, ?)", (fingerprint_id, name, infoMap[name][0], infoMap[name][1], infoMap[name][2], infoMap[name][3], infoMap[name][4]))
