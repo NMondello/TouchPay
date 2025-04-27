@@ -1,18 +1,19 @@
-.gitignore
+# .gitignore
 keys.py
 fingerprints.db
 
 # dependencies
-*/node_modules
-*/.next
-*/.turbo
-*/.yarn
+**/node_modules
+**/.next
+**/public
+**/.turbo
+**/.yarn
+**/.pnp
+**/.pnp.js
+**/.yarn/install-state.gz
 */.pnp
-*/.pnp.js
-*/.yarn/install-state.gz
-/.pnp
-.pnp.js
-.yarn/install-state.gz
+*.pnp.js
+*.yarn/install-state.gz
 
 # testing
 /coverage
@@ -23,7 +24,7 @@ fingerprints.db
 
 # production
 /build
-
+µ
 # misc
 .DS_Store
 *.pem

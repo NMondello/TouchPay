@@ -3,9 +3,13 @@
 import { TicketCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Undo2 } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
+
+interface ResponseProps {
+    amount: number | null;
+}
   
-export default async function Response() {
+export default async function Response({ amount }: ResponseProps) {
     const status = true;
 
     const router = useRouter();
@@ -14,14 +18,11 @@ export default async function Response() {
         router.back()
     }
 
-    const searchParams = useSearchParams();
-    const amount = searchParams.get('message');
+    const res = await fetch(`http://127.0.0.1:5002/make_payment/${amount}`, {
+        cache: 'no-store',
+      })
 
-    // const res = await fetch(`http://127.0.0.1:5002/make_payment/${amount}`, {
-    //     cache: 'no-store',
-    //   })
-
-    // const json = await res.json()
+    const json = await res.json()
 
     return (
         <div >
