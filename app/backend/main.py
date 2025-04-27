@@ -42,7 +42,7 @@ def make_payment(amount):
         
 
     # Connect to SQLite
-    conn = sqlite3.connect('../../fingerprints.db')
+    conn = sqlite3.connect('/fingerprints.db')
     cursor = conn.cursor()
 
     # Create table if not exists
