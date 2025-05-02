@@ -9,7 +9,7 @@ export default function saleForm() {
     const router = useRouter();
 
     const goToResponse = () => {
-        router.push(`/response?message=${amount}`);
+        router.push(`/saleResponse?message=${amount}`);
     }
 
     const [amount, setAmount] = useState(0);

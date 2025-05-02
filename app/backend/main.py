@@ -8,8 +8,10 @@ import keys
 import uuid
 import json
 from flask import Flask, request, jsonify, Response
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 # 1. --- USER SETTINGS -------------------------------------------------
 port       = "/dev/tty.usbmodemF412FA75DE8C2"        # Windows example – replace with /dev/ttyACM0, /dev/ttyUSB0, etc.
@@ -26,17 +28,17 @@ def open_serial(wait_for_arduino_reset: bool = True) -> serial.Serial:
         ser.reset_input_buffer()
     return ser
 
-@app.route('/make_payment', methods=['GET'])
+@app.route('/make_payment/<amount>', methods=['GET'])
 def make_payment(amount):
     # Connect to Arduino
     try:
-            ser = SR.open_serial()
+            ser = open_serial()
     except serial.SerialException as e:
             print(f"❌ Could not open serial port: {e}")
         
 
     # Connect to SQLite
-    conn = sqlite3.connect('/fingerprints.db')
+    conn = sqlite3.connect('fingerprints.db')
     cursor = conn.cursor()
 
     # Create table if not exists
@@ -68,56 +70,65 @@ def make_payment(amount):
             # Query or Insert
             cursor.execute("SELECT * FROM users WHERE id=?", (fingerprint_id,))
             resultDb = cursor.fetchone()
+            amountCents = int(amount * 100)
 
             if resultDb:
                 client = Square(
                     token=keys.SQUARE_ACCESS_TOKEN,
                     environment=SquareEnvironment.SANDBOX)
                 idempotency_key = str(uuid.uuid4()) 
-                resultSquare = client.payments.create(
-                    source_id="cnon:card-nonce-ok",
-                    idempotency_key=idempotency_key,
-                    amount_money={
-                        "amount": amount * 100,  # Amount in cents
-                        "currency": "USD"
-                    },
-                    autocomplete=True,
-                    note="MILK",
-                    buyer_email_address=resultDb[2],
-                    card_brand = resultDb[3],
-                    card_digits=resultDb[4],
-                )
-                if resultSquare.errors:
-                    result['status'] = False;
-                    result['message'] = resultSquare.errors
-                    print(result.errors)
-                    break
-                else:
-                    buyer_email = resultSquare.payment.buyer_email_address  # May be None if not collected
-
-                    # Get card brand (from card_details)
-                    card_brand = None
-                    if resultSquare.payment.card_details and resultSquare.payment.card_details.card:
-                        card_brand = resultSquare.payment.card_details.card.card_brand
-                        card_digits = resultSquare.payment.card_details.card.last4
-                    
-                    result['status'] = True
-
-                    # Build and print the thank you message
-                    if buyer_email and card_brand:
-                        result['message'] = f"Thanks {buyer_email} for the purchase of {result.note} for ${amount:.2f} on your {card_brand} card ending in {card_digits}!"
-                        print(result['message'])
-                    elif buyer_email:
-                        result['message'] = f"Thanks {buyer_email} for the purchase of {result.note} for ${amount:.2f}!"
-                        print(result['message'])
-                    elif card_brand:
-                        result['message'] = f"Thanks for your purchase of {result.note} for ${amount:.2f} on your {card_brand} card ending in {card_digits}!"
-                        print(result['message'])
+                try:
+                    print(resultDb)
+                    resultSquare = client.payments.create(
+                        source_id="cnon:card-nonce-ok",
+                        idempotency_key=idempotency_key,
+                        amount_money={
+                            "amount": 1000,  # Amount in cents
+                            "currency": "USD"
+                        },
+                        autocomplete=True,
+                        note="MILK",
+                        buyer_email_address=resultDb[2],
+                        # card_brand = "Visa",
+                        # card_digits="1839403849283947"
+                    )
+                    if resultSquare.errors:
+                        result['status'] = False
+                        result['message'] = resultSquare.errors
+                        print(result.errors)
+                        break
                     else:
-                        result['message'] = f"Thanks for your purchase of {result.note} for ${amount:.2f}!"
-                        print(result['message'])
+                        buyer_email = resultSquare.payment.buyer_email_address  # May be None if not collected
 
-                    break
+                        # Get card brand (from card_details)
+                        card_brand = resultDb[3]
+                        card_digits = resultDb[4][-4:]
+                        # if resultSquare.payment.card_details and resultSquare.payment.card_details.card:
+                        #     card_brand = resultSquare.payment.card_details.card.card_brand
+                        #     card_digits = resultSquare.payment.card_details.card.last4
+                        
+                        result['status'] = True
+
+                        # Build and print the thank you message
+                        if buyer_email and card_brand:
+                            result['message'] = f"Thanks {buyer_email} for the purchase of {resultSquare.payment.note} for ${float(amount):.2f} on your {card_brand} card ending in {card_digits}!"
+                            print(result['message'])
+                        elif buyer_email:
+                            result['message'] = f"Thanks {buyer_email} for the purchase of {resultSquare.payment.note} for ${float(amount):.2f}!"
+                            print(result['message'])
+                        elif card_brand:
+                            result['message'] = f"Thanks for your purchase of {resultSquare.payment.note} for ${float(amount):.2f} on your {card_brand} card ending in {card_digits}!"
+                            print(result['message'])
+                        else:
+                            result['message'] = f"Thanks for your purchase of {resultSquare.payment.note} for ${float(amount):.2f}!"
+                            print(result['message'])
+
+                        break
+                except Exception as e:
+                     result['status'] = False
+                     result['message'] = f"Error occurred during Square API Call: {e}"
+                     print(result['message'])
+                     break
             else:
                 result['status'] = False
                 result['message'] = "Fingerprint not found in database."
@@ -127,14 +138,15 @@ def make_payment(amount):
             print("\n👋 Exiting on Ctrl‑C")
     finally:
             ser.close()
+            print(result)
             return jsonify(result)
 
-@app.route('/add_user', methods=['GET'])
-def add_user(info):
-    
+@app.route('/add_user', methods=['POST'])
+def add_user():
+    info = request.get_json()
     # Connect to Arduino
     try:
-            ser = SR.open_serial()
+            ser = open_serial()
     except serial.SerialException as e:
             print(f"❌ Could not open serial port: {e}")
         
@@ -181,7 +193,7 @@ def add_user(info):
             else:
                 cursor.execute("INSERT INTO users (id, name, email, credit_card_provider, credit_card_number, cvv, expiration) VALUES (?, ?, ?, ?, ?, ?, ?)", (fingerprint_id, info['name'], info['email'], info['provider'], info['number'], info['cvv'], info['expiry']))
                 conn.commit()
-                result['message'] = f"User {info[0]} added."
+                result['message'] = f"User {info['name']} added."
                 result['status'] = True
                 print(result['message'])
                 break
@@ -189,6 +201,7 @@ def add_user(info):
             print("\n👋 Exiting on Ctrl‑C")
     finally:
             ser.close()
+            print(result)
             return jsonify(result)
 
 if __name__ == '__main__':

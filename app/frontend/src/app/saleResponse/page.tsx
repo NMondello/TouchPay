@@ -1,7 +1,8 @@
+"use client";
 import SaleResponse from "@/components/saleResponse/saleResponse";
 import { useSearchParams } from "next/navigation";
 
-export default async function SaleResponsePage() {
+export default function SaleResponsePage() {
 
     const searchParams = useSearchParams();
     const mes = searchParams.get('message');

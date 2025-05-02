@@ -4,12 +4,13 @@ import { TicketCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Undo2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useEffect, useState} from 'react';
 
 interface SaleResponseProps {
     amount: number | null;
 }
   
-export default async function SaleResponse({ amount }: SaleResponseProps) {
+export default function SaleResponse({ amount }: SaleResponseProps) {
 
     const router = useRouter();
 
@@ -17,18 +18,42 @@ export default async function SaleResponse({ amount }: SaleResponseProps) {
         router.push(`/`);
     }
 
-    const res = await fetch(`http://127.0.0.1:5002/make_payment/${amount}`, {
-        cache: 'no-store',
-      })
+    const [data, setData] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+        
+    useEffect(() => {
+    const fetchData = async () => {
+        let payment = {};
+        try {
+            const res = await fetch(`http://127.0.0.1:5002/make_payment/${amount}`, {
+                cache: 'no-store',
+              });
+            if (!res.ok) {
+                console.log('Fetch failed with status:', res.status);
+            } else {
+                payment = await res.json();
+                console.log('Response data:', payment);
+            }
+            } catch (err) {
+            console.error('Error during fetch:', err);
+            }
+        setData(payment);
+        setLoading(false);
+    };
 
-    const json = await res.json()
+    fetchData();
+    }, [amount]);
+
+    if (loading) {
+    return <div>Loading...</div>
+    }
 
     return (
         <div >
-            {json['status'] ? 
+            {data['status'] ? 
                 <div className="flex items-center py-4">
                     <h1>
-                        {`Payment successful: ${json['message']}`}
+                        {`Payment successful: ${data['message']}`}
                     </h1>
                     <TicketCheck className="text-green-500" />
                     <Button variant='ghost' onClick={goToHome}>
@@ -38,7 +63,7 @@ export default async function SaleResponse({ amount }: SaleResponseProps) {
              : 
                 <div>
                     <h1>
-                    {`Payment failed: ${json['message']}`}
+                    {`Payment failed: ${data['message']}`}
                     </h1>
                     <Button variant='ghost' onClick={goToHome}>
                         <Undo2 />

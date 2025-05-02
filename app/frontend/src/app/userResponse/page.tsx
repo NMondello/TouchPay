@@ -1,3 +1,4 @@
+"use client";
 import UserResponse from "@/components/userResponse/userResponse";
 import { useSearchParams } from "next/navigation";
 
@@ -5,7 +6,7 @@ export default async function UserResponsePage() {
 
     const searchParams = useSearchParams();
     const mes = searchParams.get('message');
-    let info: { [key: string]: string} = {};
+    let info = {name: "", email: "", provider: "", number: "", cvv: "", expiry: "",};
 
     if (mes) {
         const m = mes.split(" ");
